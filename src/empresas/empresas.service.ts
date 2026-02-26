@@ -26,7 +26,7 @@ export class EmpresasService {
 
   private validarDocumento(tipo: string, documento: string) {
     if (tipo === 'Jurídica' && documento.length !== 14) {
-      throw new BadRequestException('CNPJ inválido'); 
+      throw new BadRequestException('CNPJ fornecido inválido'); 
     }
     if (tipo === 'Física' && documento.length !== 11) {
       throw new BadRequestException('CPF inválido');

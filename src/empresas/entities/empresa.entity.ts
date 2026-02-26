@@ -28,4 +28,7 @@ export class Empresa {
 
   @Column({ default: 'PENDENTE' })
   status: string;
+
+  @Column({ nullable: true })
+  responsavel_externo: string;
 }
