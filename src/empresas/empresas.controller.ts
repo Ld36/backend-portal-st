@@ -15,12 +15,12 @@ export class EmpresasController {
       { name: 'documento_obrigatorio', maxCount: 1 },
       { name: 'documento_opcional', maxCount: 1 },
     ], {
-      fileFilter: imageFileFilter, // Trata FE10 [cite: 118]
+      fileFilter: imageFileFilter, 
     }),
   )
   async create(
     @Body() dto: CreateEmpresaDto,
-    @UserType() userType: string, // Utiliza o novo decorador customizado
+    @UserType() userType: string, 
     @UploadedFiles() files: { documento_obrigatorio?: Express.Multer.File[], documento_opcional?: Express.Multer.File[] },
   ) {
     if (!files.documento_obrigatorio) {
