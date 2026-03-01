@@ -74,4 +74,35 @@ export class EmpresasService {
       await this.repository.save(empresa);
       return { message: 'Empresa atualizada com sucesso' }; 
   }
+
+  async reprovar(id: number, motivo: string) {
+      const empresa = await this.repository.findOneBy({ id });
+      if (!empresa) throw new BadRequestException('Empresa não encontrada');
+
+      empresa.status = StatusEmpresa.REPROVADO;
+      empresa.observacao_reprovacao = motivo;
+
+      await this.repository.save(empresa);
+      return { message: 'Empresa reprovada com sucesso' }; 
+  }
+
+  async aprovar(id: number, responsavel: string) {
+      const empresa = await this.repository.findOneBy({ id });
+      if (!empresa) throw new BadRequestException('Empresa não encontrada');
+
+      empresa.status = StatusEmpresa.APROVADO;
+      empresa.responsavel_externo = responsavel;
+
+      await this.repository.save(empresa);
+      return { message: 'Empresa aprovada com sucesso' }; 
+  }
+
+  async getDashboardStats() {
+      const total = await this.repository.count();
+      const aprovadas = await this.repository.countBy({ status: StatusEmpresa.APROVADO });
+      const pendentes = await this.repository.countBy({ status: StatusEmpresa.PENDENTE });
+      const reprovadas = await this.repository.countBy({ status: StatusEmpresa.REPROVADO });
+
+      return { total, aprovadas, pendentes, reprovadas };
+  }
 }

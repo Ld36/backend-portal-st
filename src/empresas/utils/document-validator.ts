@@ -4,7 +4,6 @@ export class DocumentValidator {
     }
 
     static isForeignIdValid(id: string): boolean {
-        // FE01: Valida se o campo não está vazio e tem um tamanho mínimo 
         return id.trim().length >= 3; 
     }
 

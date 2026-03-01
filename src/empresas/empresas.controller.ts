@@ -11,7 +11,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 export class EmpresasController {
   constructor(private readonly empresasService: EmpresasService) {}
 
-  @ApiOperation({ summary: 'Realiza o cadastro de uma nova empresa (Fluxo Principal/FA01/FA02)' })
+  @ApiOperation({ summary: 'Realiza o cadastro de uma nova empresa' })
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -39,7 +39,7 @@ export class EmpresasController {
     return this.empresasService.create(dto, userType);
   }
 
-  @ApiOperation({ summary: 'Lista todas as empresas para administração (FA03)' })
+  @ApiOperation({ summary: 'Lista todas as empresas para administração' })
   @Get()
   async findAll(@UserType() userType: string) {
     if (userType !== 'interno') {
@@ -52,5 +52,37 @@ export class EmpresasController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() dto: Partial<CreateEmpresaDto>) {
     return this.empresasService.update(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Retorna estatísticas para o Dashboard' })
+  @Get('dashboard/stats')
+  async getStats() {
+    return this.empresasService.getDashboardStats();
+  }
+
+  @ApiOperation({ summary: 'Aprova uma empresa e atribui responsável' })
+  @Patch(':id/aprovar')
+  async aprovar(
+    @Param('id') id: number,
+    @Body('responsavel_externo') responsavel: string,
+    @UserType() userType: string,
+  ) {
+    if (userType !== 'interno') {
+      throw new BadRequestException('Acesso negado: Requer perfil Interno ');
+    }
+    return this.empresasService.aprovar(id, responsavel);
+  }
+
+  @ApiOperation({ summary: 'Reprova uma empresa com justificativa' })
+  @Patch(':id/reprovar')
+  async reprovar(
+    @Param('id') id: number,
+    @Body('motivo') motivo: string,
+    @UserType() userType: string,
+  ) {
+    if (userType !== 'interno') {
+      throw new BadRequestException('Acesso negado: Requer perfil Interno ');
+    }
+    return this.empresasService.reprovar(id, motivo);
   }
 }

@@ -31,4 +31,7 @@ export class Empresa {
 
   @Column({ type: 'varchar', nullable: true })
   responsavel_externo: string | null;
+
+  @Column({ nullable: true })
+  observacao_reprovacao: string;
 }
