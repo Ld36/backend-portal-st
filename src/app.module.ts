@@ -20,7 +20,7 @@ import { RhModule } from './rh/rh.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        // Em produção, isso deve ser false e vou usar Migrations
+        // Em produção, deve ser false e vou usar Migrations
         synchronize: configService.get<string>('DB_SYNC') === 'true', 
       }),
     }),

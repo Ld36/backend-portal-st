@@ -26,4 +26,8 @@ export class CreateEmpresaDto {
   @IsOptional()
   @IsBoolean()
   faturamento_direto: boolean;
+
+  @IsOptional()
+  @IsString()
+  responsavel_externo?: string | null;
 }
