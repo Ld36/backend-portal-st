@@ -9,3 +9,13 @@ export enum TipoPessoa {
   JURIDICA = 'juridica',
   ESTRANGEIRA = 'estrangeira',
 }
+
+export const PERFIS_VALIDOS = [
+  'Despachante',
+  'Beneficiário',
+  'Consignatário',
+  'Armador',
+  'Agente de Carga',
+  'Transportadora',
+  'Novo usuário'
+];

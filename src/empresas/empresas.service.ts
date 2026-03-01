@@ -5,7 +5,7 @@ import { Empresa } from './entities/empresa.entity';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 // Importações necessárias para resolver os erros:
 import { DocumentValidator } from './utils/document-validator';
-import { TipoPessoa, StatusEmpresa } from './enums/empresa.enum';
+import { TipoPessoa, StatusEmpresa, PERFIS_VALIDOS } from './enums/empresa.enum';
 
 @Injectable()
 export class EmpresasService {
@@ -30,12 +30,22 @@ export class EmpresasService {
 
   private processBusinessRules(dto: CreateEmpresaDto) {
     const tipo = DocumentValidator.normalize(dto.tipo_pessoa);
+    const doc = dto.documento;
     
+    if (!dto.perfil) {
+      throw new BadRequestException('Selecione um perfil para a empresa');
+    }
+    if (!PERFIS_VALIDOS.includes(dto.perfil)) {
+      throw new BadRequestException('Ocorreu um erro ao encontrar o perfil'); // Modal M03
+    }
     if (tipo === TipoPessoa.JURIDICA && !DocumentValidator.isCnpjValid(dto.documento)) {
       throw new BadRequestException('CNPJ fornecido inválido'); 
     }
     if (tipo === TipoPessoa.FISICA && !DocumentValidator.isCpfValid(dto.documento)) {
       throw new BadRequestException('CPF inválido'); 
+    }
+    if (tipo === TipoPessoa.ESTRANGEIRA && !DocumentValidator.isForeignIdValid(doc)) {
+      throw new BadRequestException('Identificação estrangeira inválida');
     }
   }
 
@@ -53,6 +63,15 @@ export class EmpresasService {
   }
 
   async findAll() {
-    return await this.repository.find();
+      return await this.repository.find();
+    }
+    async update(id: number, dto: Partial<CreateEmpresaDto>) {
+      const empresa = await this.repository.findOneBy({ id });
+      if (!empresa) throw new BadRequestException('Empresa não encontrada');
+
+      Object.assign(empresa, dto);
+      
+      await this.repository.save(empresa);
+      return { message: 'Empresa atualizada com sucesso' }; 
   }
 }

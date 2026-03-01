@@ -3,6 +3,11 @@ export class DocumentValidator {
         return text.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     }
 
+    static isForeignIdValid(id: string): boolean {
+        // FE01: Valida se o campo não está vazio e tem um tamanho mínimo 
+        return id.trim().length >= 3; 
+    }
+
     static isCpfValid(cpf: string): boolean {
         const cleanCpf = cpf.replace(/\D/g, '');
         if (cleanCpf.length !== 11 || /^(\d)\1+$/.test(cleanCpf)) return false;
