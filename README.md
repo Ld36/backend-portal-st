@@ -109,6 +109,10 @@ src/
 
 ```env
 # Configuração do Banco de Dados
+# Opção 1 (recomendada em cloud): URL única
+DATABASE_URL=postgresql://user:password@host:5432/database
+
+# Opção 2 (local/dev): campos separados
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
@@ -140,6 +144,16 @@ npm run start:prod         # Inicia em modo produção
 
 # Utilitários
 npm run create-admin       # Cria primeiro administrador
+
+# Exemplo com credenciais customizadas (PowerShell)
+$env:ADMIN_NAME="Administrador"
+$env:ADMIN_EMAIL="admin@portal.com"
+$env:ADMIN_PASSWORD="SenhaForte123!"
+npm run create-admin
+
+# Exemplo com credenciais customizadas (Linux/macOS)
+ADMIN_NAME="Administrador" ADMIN_EMAIL="admin@portal.com" ADMIN_PASSWORD="SenhaForte123!" npm run create-admin
+
 npm run lint               # Verifica código com ESLint
 npm run test               # Executa testes unitários
 
