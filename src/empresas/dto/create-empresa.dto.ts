@@ -1,14 +1,17 @@
-import { IsNotEmpty, IsString, IsBoolean, IsOptional, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsString, IsBoolean, IsOptional, MinLength, ValidateIf } from 'class-validator';
 
 export class CreateEmpresaDto {
   @IsNotEmpty({ message: 'O tipo de pessoa é obrigatório' })
   tipo_pessoa: string;
 
-  @IsOptional()
+  @ValidateIf(o => o.tipo_pessoa === 'juridica')
+  @IsNotEmpty({ message: 'A Razão Social é obrigatória para Pessoa Jurídica' })
   @IsString()
   razao_social?: string;
 
-  @IsOptional()
+  @ValidateIf(o => o.tipo_pessoa !== 'juridica')
+  @IsNotEmpty({ message: 'O Nome é obrigatório' })
   @IsString()
   nome?: string;
 
@@ -18,6 +21,7 @@ export class CreateEmpresaDto {
   documento: string;
 
   @IsNotEmpty({ message: 'Nome fantasia é obrigatório' })
+  @IsString()
   nome_fantasia: string;
 
   @IsNotEmpty({ message: 'Selecione um perfil para a empresa' })
@@ -25,6 +29,7 @@ export class CreateEmpresaDto {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   faturamento_direto: boolean;
 
   @IsOptional()
