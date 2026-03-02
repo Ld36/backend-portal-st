@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmpresasModule } from './empresas/empresas.module';
 import { RhModule } from './rh/rh.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RhModule } from './rh/rh.module';
         synchronize: configService.get<string>('DB_SYNC') === 'true', 
       }),
     }),
+    AuthModule,
     EmpresasModule,
     RhModule,
   ],
