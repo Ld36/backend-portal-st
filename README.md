@@ -60,7 +60,7 @@ src/
 ### Instalação
 1. Clone o repositório:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Ld36/backend-portal-st.git
    cd backend-portal-st
    ```
 
@@ -85,10 +85,6 @@ src/
    ```bash
    npm run create-admin
    ```
-
-6. Acesse a aplicação:
-   - **API:** http://localhost:3000
-   - **Swagger:** http://localhost:3000/api
 
 ## Endpoints Principais
 
