@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Empresa } from './entities/empresa.entity';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
-// Importações necessárias para resolver os erros:
 import { DocumentValidator } from './utils/document-validator';
 import { TipoPessoa, StatusEmpresa, PERFIS_VALIDOS } from './enums/empresa.enum';
+import { generateHash } from '../common/encryption/hash.util';
 
 @Injectable()
 export class EmpresasService {
@@ -17,7 +17,10 @@ export class EmpresasService {
   async create(dto: CreateEmpresaDto, userType: string) {
     this.processBusinessRules(dto);
 
-    const empresa = this.repository.create(dto);
+    const empresa = this.repository.create({
+      ...dto,
+      documento_hash: generateHash(dto.documento)
+    });
 
     if (userType === 'interno') {
       this.handleInternalCreation(empresa, dto.responsavel_externo ?? '');
@@ -104,5 +107,27 @@ export class EmpresasService {
       const reprovadas = await this.repository.countBy({ status: StatusEmpresa.REPROVADO });
 
       return { total, aprovadas, pendentes, reprovadas };
+  }
+  async findByDocumento(documento: string) {
+    const documentoHash = generateHash(documento);
+    
+    // Busca primeiro pelo hash (método novo e eficiente)
+    let empresa = await this.repository.findOne({ 
+      where: { documento_hash: documentoHash } 
+    });
+    
+    // Se não encontrou pelo hash, busca por todas e compara descriptografado (fallback)
+    if (!empresa) {
+      const empresas = await this.repository.find();
+      empresa = empresas.find(e => e.documento === documento) || null;
+      
+      // Se encontrou, atualiza o hash para futuras buscas
+      if (empresa && !empresa.documento_hash) {
+        empresa.documento_hash = documentoHash;
+        await this.repository.save(empresa);
+      }
+    }
+    
+    return empresa;
   }
 }

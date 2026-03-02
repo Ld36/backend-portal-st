@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseInterceptors, UploadedFiles, BadRequestException, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseInterceptors, UploadedFiles, BadRequestException, Param, Patch, UseGuards, NotFoundException } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { EmpresasService } from './empresas.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
@@ -12,6 +12,21 @@ import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 export class EmpresasController {
   constructor(private readonly empresasService: EmpresasService) {}
 
+  @ApiOperation({ summary: 'Consulta pública de status por documento' })
+  @Get('status/:documento')
+  async getStatus(@Param('documento') documento: string) {
+    const empresa = await this.empresasService.findByDocumento(documento);
+    
+    if (!empresa) {
+      throw new NotFoundException('Empresa não encontrada.');
+    }
+    return {
+      nome_fantasia: empresa.nome_fantasia,
+      status: empresa.status,
+      observacao_reprovacao: empresa.observacao_reprovacao,
+    };
+  }
+
   @ApiOperation({ summary: 'Realiza o cadastro de uma nova empresa' })
   @Post()
   @UseInterceptors(
@@ -20,7 +35,7 @@ export class EmpresasController {
       { name: 'documento_opcional', maxCount: 1 },
     ], {
       fileFilter: imageFileFilter,
-      limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB por arquivo
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   async create(
@@ -29,14 +44,8 @@ export class EmpresasController {
     @UploadedFiles() files: { documento_obrigatorio?: Express.Multer.File[], documento_opcional?: Express.Multer.File[] },
   ) {
     if (!files.documento_obrigatorio) {
-      throw new BadRequestException('É necessário enviar os arquivos obrigatórios para prosseguir');
+      throw new BadRequestException('É necessário enviar os arquivos obrigatórios');
     }
-
-    if (files.documento_opcional && 
-        files.documento_obrigatorio[0].originalname === files.documento_opcional[0].originalname) {
-      throw new BadRequestException('Arquivo duplicado');
-    }
-
     return this.empresasService.create(dto, userType);
   }
 
@@ -45,53 +54,31 @@ export class EmpresasController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@UserType() userType: string) {
-    if (userType !== 'interno') {
-      throw new BadRequestException('Acesso negado para este perfil');
-    }
+    if (userType !== 'interno') throw new BadRequestException('Acesso negado');
     return this.empresasService.findAll();
   }
   
   @ApiOperation({ summary: 'Atualiza os dados de uma empresa' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard) 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() dto: Partial<CreateEmpresaDto>) {
     return this.empresasService.update(id, dto);
   }
 
-  @ApiOperation({ summary: 'Retorna estatísticas para o Dashboard' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Get('dashboard/stats')
-  async getStats() {
-    return this.empresasService.getDashboardStats();
-  }
-
-  @ApiOperation({ summary: 'Aprova uma empresa e atribui responsável' })
+  @ApiOperation({ summary: 'Aprova uma empresa' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch(':id/aprovar')
-  async aprovar(
-    @Param('id') id: number,
-    @Body('responsavel_externo') responsavel: string,
-    @UserType() userType: string,
-  ) {
-    if (userType !== 'interno') {
-      throw new BadRequestException('Acesso negado: Requer perfil Interno ');
-    }
+  async aprovar(@Param('id') id: number, @Body('responsavel_externo') responsavel: string) {
     return this.empresasService.aprovar(id, responsavel);
   }
 
-  @ApiOperation({ summary: 'Reprova uma empresa com justificativa' })
+  @ApiOperation({ summary: 'Reprova uma empresa' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch(':id/reprovar')
-  async reprovar(
-    @Param('id') id: number,
-    @Body('motivo') motivo: string,
-    @UserType() userType: string,
-  ) {
-    if (userType !== 'interno') {
-      throw new BadRequestException('Acesso negado: Requer perfil Interno ');
-    }
+  async reprovar(@Param('id') id: number, @Body('motivo') motivo: string) {
     return this.empresasService.reprovar(id, motivo);
   }
 }

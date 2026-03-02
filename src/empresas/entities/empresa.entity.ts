@@ -21,6 +21,9 @@ export class Empresa {
   })
   documento: string;
 
+  @Column({ unique: true, nullable: true })
+  documento_hash: string;
+
   @Column({ nullable: true })
   nome_fantasia: string;
 
