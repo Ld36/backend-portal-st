@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Get, UseInterceptors, UploadedFiles, BadRequestException, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseInterceptors, UploadedFiles, BadRequestException, Param, Patch, UseGuards } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { EmpresasService } from './empresas.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { imageFileFilter } from './utils/file-upload.utils';
 import { UserType } from '../common/decorators/user-type.decorator';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('empresas')
 @Controller('empresas')
@@ -40,6 +41,8 @@ export class EmpresasController {
   }
 
   @ApiOperation({ summary: 'Lista todas as empresas para administração' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@UserType() userType: string) {
     if (userType !== 'interno') {
@@ -55,12 +58,16 @@ export class EmpresasController {
   }
 
   @ApiOperation({ summary: 'Retorna estatísticas para o Dashboard' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('dashboard/stats')
   async getStats() {
     return this.empresasService.getDashboardStats();
   }
 
   @ApiOperation({ summary: 'Aprova uma empresa e atribui responsável' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/aprovar')
   async aprovar(
     @Param('id') id: number,
@@ -74,6 +81,8 @@ export class EmpresasController {
   }
 
   @ApiOperation({ summary: 'Reprova uma empresa com justificativa' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/reprovar')
   async reprovar(
     @Param('id') id: number,
