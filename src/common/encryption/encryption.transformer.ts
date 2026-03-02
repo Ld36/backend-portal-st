@@ -32,19 +32,34 @@ export class EncryptionTransformer implements ValueTransformer {
   from(value: string | null): string | null {
     if (!value) return value;
     
+    if (!value.includes(':')) {
+      return value; 
+    }
+    
     const secret = this.getSecret();
-    const [ivHex, encryptedHex] = value.split(':');
+    const parts = value.split(':');
     
-    const iv = Buffer.from(ivHex, 'hex');
-    const encryptedText = Buffer.from(encryptedHex, 'hex');
+    if (parts.length !== 2) {
+      return value; 
+    }
     
-    const decipher = crypto.createDecipheriv(this.algorithm, secret, iv);
+    const [ivHex, encryptedHex] = parts;
     
-    const decrypted = Buffer.concat([
-      decipher.update(encryptedText),
-      decipher.final(),
-    ]);
-    
-    return decrypted.toString('utf8');
+    try {
+      const iv = Buffer.from(ivHex, 'hex');
+      const encryptedText = Buffer.from(encryptedHex, 'hex');
+      
+      const decipher = crypto.createDecipheriv(this.algorithm, secret, iv);
+      
+      const decrypted = Buffer.concat([
+        decipher.update(encryptedText),
+        decipher.final(),
+      ]);
+      
+      return decrypted.toString('utf8');
+    } catch (error) {
+      console.error('Erro ao descriptografar:', error);
+      return value; 
+    }
   }
 }
