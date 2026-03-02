@@ -126,6 +126,9 @@ SECRET_KEY=sua_chave_secreta_de_32_caracteres
 # JWT Secret (para autenticação)
 JWT_SECRET=seu_jwt_secret_aqui_bem_seguro_123
 
+# URL do frontend liberada no CORS (obrigatória em produção)
+FRONTEND_URL=https://frontend-portal-st.onrender.com
+
 # Outras configurações
 NODE_ENV=development
 PORT=3000
